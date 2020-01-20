@@ -41,7 +41,7 @@ def mask(image, size):
 
 #----------------------------------------------------------
 
-ICOUNT = 30
+ICOUNT = 40
 PSF2 = 15
 PSF = 31
 
@@ -51,7 +51,7 @@ def get_images():
     count = ICOUNT
     
     model = np.load(path_images[0])
-    show_array_linear(model, "ref")
+    show_array_linear(model, "sum of images")
     ims = np.zeros((count, model.shape[0], model.shape[1]))
    
     model = model - np.min(model)
@@ -66,11 +66,11 @@ def get_images():
         print(mean)
         
         an_image = an_image / (mean/target_mean)
-        an_image = an_image + 1.0*np.random.standard_normal(model.shape)/152.0
+        an_image = an_image + 1.0*np.random.standard_normal(model.shape)/100.0      #+-1 % RMS noise
         ims[idx] = an_image
         
         sum = sum + an_image
-        show_array_linear(an_image, "tmp")
+        show_array_linear(an_image, "sample_input")
     
     sum = sum / count
     
@@ -147,15 +147,17 @@ def optimize():
                 session.run(train_psf)
             #session.run(train_psf)
             res = session.run(result)
-            show_array_linear(res, "result")
+            show_array_linear(res, "reconv_of_frame0")
             res = session.run(psfs)
             #res = np.abs(res)
             res = np.square(res)
-            show_array(res[0], "psf0")
-            show_array(res[1], "psf1")
-            show_array(res[2], "psf2")
-            show_array(res[3], "psf3")
-            print("psf = ", np.max(res))
+            show_array(np.concatenate((np.concatenate(res[0:10]),
+                                      np.concatenate(res[10:20]),
+                                      np.concatenate(res[20:30])), axis=1), "psf0")
+            #show_array(res[1], "psf1")
+            #show_array(res[2], "psf2")
+            #show_array(res[3], "psf3")
+            #print("psf = ", np.max(res))
             res = session.run(model)
             show_array_linear(res[20:-20,20:-20], "model")
             
